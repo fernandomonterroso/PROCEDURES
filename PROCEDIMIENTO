@@ -1,0 +1,43 @@
+create or replace PROCEDURE PRUEBA_ENVIO_HTML IS 
+ V_TEMP VARCHAR2(4000):='';
+ VAR1 LONG :='';
+ parsear LONG :='';
+ V_RESP_WWW_POST VARCHAR2(4000):='';
+ Mail_Para VARCHAR2(4000):='';
+ Mail_CC VARCHAR2(4000):='';
+ Mail_Asunto VARCHAR2(4000):='';
+ l_cursor SYS_REFCURSOR;
+ BEGIN
+    select 'hnajarro@combexim.com.gt', 'hnajarro@combexim.com.gt', mail_msg,Mail_Asunto INTO Mail_Para,Mail_CC, VAR1, Mail_Asunto from sab.sab_sacl_mail where mail_id = 4;
+  
+
+--raise_application_error(-20001,LENGTH(VAR1));
+
+OPEN l_cursor FOR
+    select 'fmonterroso@combexim.com.gt' as "to",
+    'fmonterroso@combexim.com.gt'as "cc",
+    Mail_Asunto as "asunto",
+    '5' as "type",  --- numero de cuenta
+    --'\\10.238.20.206\Compartido_VAR\consultas\module\ocupacional_prove\adjunto\B35339F0-76BB-11EB-9B92-DBCA58427C09.pdf' as "attachment",
+    '' as "attachment",
+    'prueba.png' as "nameAttachment",  --- .PNG PARA QR   .PGN PARA QR
+    'ESTO SE VOLVERA QR' as "uri"  -- en caso de ser qr
+    from dual;
+  APEX_JSON.initialize_clob_output;
+  APEX_JSON.open_object;
+  APEX_JSON.write('correo', l_cursor);
+  parsear:=SUBSTR(VAR1,1,15000);
+  APEX_JSON.write('html', parsear);
+  APEX_JSON.close_object;
+  DBMS_OUTPUT.put_line(APEX_JSON.get_clob_output);
+  
+   --SELECT CB1.FUNC_WWW_POST_HTML('http://192.200.9.100:3000/api/mailGlobal2',  --- para correo
+   SELECT CB1.FUNC_WWW_POST_HTML('http://192.200.9.100:3000/api/QR',  ---para enviar qr en correo
+   APEX_JSON.get_clob_output,'application/json') 
+    into V_RESP_WWW_POST
+  FROM DUAL;
+  APEX_JSON.free_output;
+  
+     -- DBMS_OUTPUT.PUT_LINE(JSONPT);
+
+END;
